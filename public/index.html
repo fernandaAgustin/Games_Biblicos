@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Memorama Bíblico Multijugador</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style>
+:root{
+  --bg:#fdf6e9; --card-front:#fff; --accent:#e0592a; --accent2:#2d8f6f;
+  --gold:#e8b64a; --text:#2b2340; --sidebar-bg:#3a2a66; --border:#e2d5f5;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;min-height:100vh;min-height:100dvh;
+  background:linear-gradient(135deg,#3a2a66,#5b3a9b 60%,#7e57c2);
+  font-family:'Quicksand','Noto Color Emoji',sans-serif;color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));
+  padding-bottom:calc(16px + env(safe-area-inset-bottom,0px));
+}
+.card-box{
+  background:var(--bg);color:var(--text);
+  border-radius:24px;padding:22px 22px;max-width:460px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);border:5px solid var(--gold);
+  max-height:95vh;overflow-y:auto;
+  position:relative;
+}
+h1{font-family:'Fredoka',sans-serif;color:var(--accent);text-align:center;margin:0 0 4px;font-size:1.7rem;}
+h1 span{color:var(--accent2);}
+h1 i{color:var(--gold);margin-left:4px;animation:starTwinkle 2s infinite;}
+@keyframes starTwinkle{
+  0%,100%{transform:scale(1) rotate(0deg);opacity:1;}
+  50%{transform:scale(1.15) rotate(15deg);opacity:.85;}
+}
+.sub{text-align:center;opacity:.7;font-size:.85rem;margin-bottom:14px;}
+
+.discover-bar{display:flex;justify-content:center;margin-bottom:14px;}
+.discover-btn{
+  background:linear-gradient(135deg,#4a148c,#6a1b9a 60%,#8e24aa);
+  color:#fff;border:3px solid var(--gold);border-radius:14px;
+  padding:10px 22px;font-family:'Fredoka',sans-serif;font-size:.95rem;font-weight:700;
+  cursor:pointer;box-shadow:0 4px 0 #241a40, 0 0 0 0 rgba(232,182,74,.7);
+  transition:transform .15s, box-shadow .15s;
+  animation:discoverPulse 2.4s infinite;letter-spacing:.03em;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.discover-btn:hover{transform:translateY(-2px);}
+.discover-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #241a40;}
+.discover-btn i{animation:searchWiggle 3s ease-in-out infinite;}
+@keyframes searchWiggle{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
+@keyframes discoverPulse{
+  0%,100%{box-shadow:0 4px 0 #241a40, 0 0 0 0 rgba(232,182,74,.55);}
+  50%{box-shadow:0 4px 0 #241a40, 0 0 0 10px rgba(232,182,74,0);}
+}
+
+label{display:block;font-weight:700;font-size:.85rem;margin:12px 0 6px;color:var(--sidebar-bg);}
+input{
+  width:100%;padding:13px;border-radius:12px;border:2px solid var(--border);
+  font-family:'Quicksand',sans-serif;font-size:1rem;background:#fff;color:var(--text);
+  transition:border .15s;
+}
+input:focus{outline:none;border-color:var(--accent2);}
+input.code{text-align:center;letter-spacing:.4em;font-size:1.5rem;font-family:'Fredoka',sans-serif;font-weight:700;text-transform:uppercase;}
+.btn{
+  width:100%;padding:13px;border:none;border-radius:14px;
+  font-family:'Fredoka',sans-serif;font-size:1rem;cursor:pointer;
+  margin-top:12px;color:#fff;font-weight:600;transition:transform .1s,box-shadow .1s;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn i{filter:drop-shadow(0 1px 1px rgba(0,0,0,.25));}
+.btn.primary{background:var(--accent);box-shadow:0 4px 0 #b8431f;}
+.btn.primary:active{transform:translateY(3px);box-shadow:0 1px 0 #b8431f;}
+.btn.secondary{background:var(--accent2);box-shadow:0 4px 0 #1e6b52;}
+.btn.secondary:active{transform:translateY(3px);box-shadow:0 1px 0 #1e6b52;}
+.tabs{display:flex;gap:8px;margin-bottom:6px;}
+.tab{
+  flex:1;padding:10px;border-radius:12px;border:2px solid var(--border);
+  background:#fff;cursor:pointer;font-family:'Fredoka',sans-serif;
+  font-size:.85rem;color:var(--sidebar-bg);font-weight:600;transition:all .15s;
+}
+.tab i{margin-right:4px;}
+.tab:hover{background:#faf5ff;}
+.tab.active{background:var(--sidebar-bg);color:#fff;border-color:var(--sidebar-bg);}
+.panel{display:none;}
+.panel.active{display:block;}
+.error{color:#c62828;font-size:.85rem;margin-top:10px;text-align:center;min-height:1.2em;}
+.waiting{text-align:center;font-size:.9rem;opacity:.75;margin-top:12px;}
+.badge{background:var(--accent2);color:#fff;font-size:.7rem;padding:3px 9px;border-radius:8px;font-weight:700;}
+h3{font-family:'Fredoka',sans-serif;color:var(--accent);margin:0 0 4px;font-size:1.15rem;}
+h3 i{margin-right:4px;}
+p.help{font-size:.85rem;opacity:.7;margin:4px 0 10px;}
+
+.avatar-row{
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border:2px solid var(--border);border-radius:14px;
+  padding:8px;margin-top:6px;
+}
+.avatar-chip{
+  flex:1;aspect-ratio:1/1;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.7rem;background:#faf5ff;border-radius:12px;cursor:pointer;
+  border:2px solid transparent;
+  transition:transform .12s, border-color .12s, background .12s, box-shadow .12s;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+  max-width:70px;
+}
+.avatar-chip.selected{
+  border-color:var(--accent2);
+  background:linear-gradient(135deg,#d4f4e2,#b8ecd0);
+  box-shadow:0 0 0 3px rgba(45,143,111,.25);
+  transform:scale(1.04);
+}
+.avatar-more{
+  flex-shrink:0;height:60px;padding:0 14px;
+  background:linear-gradient(135deg,#4a148c,#8e24aa);
+  color:#fff;border:2px solid var(--gold);border-radius:12px;
+  font-family:'Fredoka',sans-serif;font-size:.78rem;font-weight:700;
+  cursor:pointer;box-shadow:0 3px 0 #241a40;transition:transform .12s;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+}
+.avatar-more:active{transform:translateY(2px);box-shadow:0 1px 0 #241a40;}
+.avatar-note{font-size:.72rem;color:#666;text-align:center;margin-top:6px;font-style:italic;}
+
+.host-info{
+  background:#fff3e0;border-left:4px solid var(--gold);
+  padding:12px 14px;border-radius:10px;font-size:.88rem;color:#7a5a00;
+  line-height:1.5;margin-top:10px;
+}
+.host-info i{color:#b8912e;margin-right:4px;}
+
+/* ================= LOBBY TIPO KAHOOT MEJORADO ================= */
+.lobby-header{text-align:center;margin-bottom:14px;}
+.lobby-title{
+  font-family:'Fredoka',sans-serif;color:var(--accent);font-size:1.3rem;
+  margin:0 0 8px;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.lobby-title i{color:var(--gold);}
+
+.code-panel{
+  background:linear-gradient(135deg,#4a148c,#6a1b9a 60%,#8e24aa);
+  border:3px solid var(--gold);border-radius:16px;
+  padding:14px 12px;text-align:center;margin-bottom:16px;
+  box-shadow:0 6px 0 #241a40;
+  position:relative;
+  overflow:hidden;
+}
+.code-panel::before{
+  content:"";
+  position:absolute;
+  top:0;left:-60%;
+  width:40%;height:100%;
+  background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.2) 50%,transparent 100%);
+  transform:skewX(-20deg);
+  animation: codeShine 4s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes codeShine{
+  0%,70%{left:-60%;}
+  100%{left:130%;}
+}
+.code-panel .label{
+  font-family:'Fredoka',sans-serif;font-size:.75rem;color:#f3e5f5;
+  text-transform:uppercase;letter-spacing:.08em;opacity:.85;margin-bottom:6px;
+}
+.code-panel .code-display{
+  font-family:'Fredoka',sans-serif;font-size:2.4rem;font-weight:700;
+  color:var(--gold);letter-spacing:.28em;
+  text-shadow:0 3px 0 rgba(0,0,0,.4);
+  margin:4px 0 10px;
+  animation: codePulse 2.4s ease-in-out infinite;
+}
+@keyframes codePulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.03);}
+}
+.code-panel .code-actions{display:flex;gap:8px;justify-content:center;}
+.code-panel .code-actions button{
+  background:rgba(255,255,255,.15);color:#fff;
+  border:2px solid rgba(255,255,255,.3);border-radius:10px;
+  padding:8px 14px;font-family:'Fredoka',sans-serif;font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;
+}
+.code-panel .code-actions button:hover{
+  background:rgba(255,255,255,.25);border-color:var(--gold);
+}
+.code-panel .code-actions button:active{transform:translateY(2px);}
+
+.players-section-title{
+  font-family:'Fredoka',sans-serif;font-size:.9rem;color:var(--sidebar-bg);
+  text-transform:uppercase;letter-spacing:.06em;margin:0 0 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;
+  background:linear-gradient(135deg,#f3e5f5,#e1bee7);
+  border-radius:12px;
+  border:2px solid var(--border);
+}
+.players-section-title .left{
+  display:flex;align-items:center;gap:8px;
+}
+.players-section-title .left i{color:var(--accent);}
+.players-section-title .badge{
+  background:var(--accent2);color:#fff;padding:3px 12px;border-radius:10px;
+  font-size:.75rem;font-weight:700;
+  box-shadow:0 2px 0 #1e6b52;
+}
+
+.lobby-players{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+  margin-bottom:16px;max-height:340px;overflow-y:auto;padding:4px;
+}
+
+.lobby-player-card{
+  background:linear-gradient(145deg,#ffffff,#faf5ff);
+  border:3px solid var(--border);border-radius:16px;
+  padding:14px 8px 12px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:8px;text-align:center;
+  animation: playerEnter .5s cubic-bezier(.4,2,.6,1);
+  position:relative;
+  transition:transform .2s, box-shadow .2s, border-color .2s;
+  overflow:hidden;
+}
+@keyframes playerEnter{
+  0%{opacity:0;transform:translateY(-20px) scale(.8);}
+  100%{opacity:1;transform:translateY(0) scale(1);}
+}
+.lobby-player-card::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:4px;
+  background:linear-gradient(90deg,var(--accent2),#4fc3f7,var(--accent2));
+  background-size:200% 100%;
+  animation: cardTopBar 4s linear infinite;
+}
+@keyframes cardTopBar{
+  0%{background-position:0% 0;}
+  100%{background-position:200% 0;}
+}
+
+.lobby-player-card.me{
+  border-color:var(--accent2);
+  background:linear-gradient(145deg,#f0fbf5,#d4f4e2);
+  box-shadow:0 4px 12px rgba(45,143,111,.25);
+}
+.lobby-player-card.me::before{
+  background:linear-gradient(90deg,var(--accent2),#7be3a8,var(--accent2));
+  background-size:200% 100%;
+}
+
+.lobby-player-card.host-card{
+  border-color:var(--gold);
+  background:linear-gradient(145deg,#fff8e4,#ffe9b8);
+  box-shadow:0 6px 18px rgba(232,182,74,.35);
+}
+.lobby-player-card.host-card::before{
+  background:linear-gradient(90deg,#b8912e,#f5d97a,#b8912e);
+  background-size:200% 100%;
+  animation: cardTopBar 3s linear infinite;
+}
+
+.lobby-player-card.editable{cursor:pointer;}
+.lobby-player-card.editable:hover{
+  transform:translateY(-4px);
+  box-shadow:0 10px 20px rgba(45,143,111,.35);
+}
+.lobby-player-card.editable:active{transform:translateY(-1px);}
+.lobby-player-card.editable::after{
+  content:"✏️";
+  position:absolute;
+  top:8px;
+  right:8px;
+  font-size:.95rem;
+  opacity:.75;
+  animation: editPulse 2s infinite;
+}
+@keyframes editPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.2);}}
+
+.card-avatar{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  background:#fff;
+  border:3px solid var(--accent2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2.3rem;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+  flex-shrink:0;
+  box-shadow:0 4px 10px rgba(0,0,0,.12);
+  position:relative;
+  transition:transform .3s;
+}
+.lobby-player-card:hover .card-avatar{
+  transform:scale(1.06);
+}
+.card-avatar::after{
+  content:"";
+  position:absolute;
+  inset:-6px;
+  border-radius:50%;
+  border:2px dashed rgba(45,143,111,.35);
+  animation: avatarRingSpin 12s linear infinite;
+  pointer-events:none;
+}
+@keyframes avatarRingSpin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+
+.lobby-player-card.host-card .card-avatar{
+  width:72px;
+  height:72px;
+  font-size:2.7rem;
+  border-color:#b8912e;
+  background:linear-gradient(135deg,#fff8e4,#f5d97a);
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.15),
+    0 0 0 4px rgba(232,182,74,.25);
+}
+.lobby-player-card.host-card .card-avatar::after{
+  border-color:rgba(184,145,46,.5);
+  border-style:solid;
+  border-width:2px;
+}
+
+.lobby-player-card.me .card-avatar{
+  border-color:var(--accent2);
+  background:linear-gradient(135deg,#f0fbf5,#d4f4e2);
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.15),
+    0 0 0 4px rgba(45,143,111,.25);
+}
+.lobby-player-card.me .card-avatar::after{
+  border-color:rgba(45,143,111,.5);
+  border-style:solid;
+  border-width:2px;
+}
+
+.card-name{
+  font-family:'Fredoka',sans-serif;
+  font-size:.9rem;
+  font-weight:700;
+  color:var(--text);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+}
+
+.card-status{
+  font-family:'Fredoka',sans-serif;
+  font-size:.7rem;
+  font-weight:700;
+  padding:4px 12px;
+  border-radius:10px;
+  background:var(--accent2);
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  box-shadow:0 2px 0 #1e6b52;
+  letter-spacing:.03em;
+}
+.card-status.you{
+  background:var(--accent);
+  box-shadow:0 2px 0 #b8431f;
+}
+.card-status.host-status{
+  background:linear-gradient(135deg,#b8912e,#e8b64a);
+  box-shadow:0 2px 0 #8a6a1a;
+  color:#3a2a00;
+}
+.card-status.disconnected{
+  background:#90a4ae;
+  box-shadow:0 2px 0 #607d8b;
+}
+.card-status i{
+  filter:drop-shadow(0 1px 0 rgba(0,0,0,.15));
+}
+
+.card-you-tag{
+  position:absolute;
+  top:6px;
+  left:6px;
+  background:var(--accent);
+  color:#fff;
+  font-family:'Fredoka',sans-serif;
+  font-size:.62rem;
+  font-weight:700;
+  padding:3px 8px;
+  border-radius:8px;
+  box-shadow:0 2px 4px rgba(0,0,0,.25);
+  animation: tagPulse 2s infinite;
+  letter-spacing:.05em;
+  z-index:2;
+}
+@keyframes tagPulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.05);}
+}
+.lobby-player-card.host-card .card-you-tag{
+  background:linear-gradient(135deg,#b8912e,#e8b64a);
+  color:#3a2a00;
+}
+
+.empty-lobby{
+  grid-column:1 / -1;
+  text-align:center;
+  padding:30px 12px;
+  font-size:.9rem;
+  color:#666;
+  opacity:.75;
+  font-style:italic;
+  background:linear-gradient(145deg,#faf5ff,#f3e5f5);
+  border-radius:16px;
+  border:2px dashed var(--border);
+}
+.empty-lobby i{
+  display:block;
+  font-size:2.5rem;
+  margin-bottom:10px;
+  color:var(--accent2);
+  animation: emptyBounce 2s infinite;
+}
+@keyframes emptyBounce{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-6px);}
+}
+
+.start-btn{
+  background:linear-gradient(135deg,#e0592a,#b8431f);
+  color:#fff;border:none;border-radius:16px;padding:16px 24px;
+  font-family:'Fredoka',sans-serif;font-size:1.15rem;font-weight:700;
+  cursor:pointer;box-shadow:0 6px 0 #8a2e15;
+  transition:transform .12s, box-shadow .12s;
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;animation: startPulse 2s infinite;margin-top:8px;letter-spacing:.03em;
+}
+@keyframes startPulse{
+  0%,100%{box-shadow:0 6px 0 #8a2e15, 0 0 0 0 rgba(224,89,42,.6);}
+  50%{box-shadow:0 6px 0 #8a2e15, 0 0 0 12px rgba(224,89,42,0);}
+}
+.start-btn:hover:not(:disabled){transform:translateY(-2px);}
+.start-btn:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 #8a2e15;}
+.start-btn:disabled{
+  background:linear-gradient(135deg,#b0bec5,#90a4ae);
+  box-shadow:0 6px 0 #607d8b;cursor:not-allowed;animation:none;opacity:.85;
+}
+
+.waiting-host{
+  text-align:center;font-size:.9rem;color:var(--sidebar-bg);padding:14px;
+  background:linear-gradient(135deg,#f3e5f5,#e1bee7);border-radius:12px;
+  font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;
+  border:2px solid var(--border);margin-top:8px;
+}
+.waiting-host i{animation: hourglassFlip 2.4s ease-in-out infinite;color:var(--accent);}
+@keyframes hourglassFlip{0%,100%{transform:rotate(0deg);}50%{transform:rotate(180deg);}}
+
+/* ================= SWEETALERT ================= */
+.swal2-popup.memorama-swal{
+  font-family:'Quicksand','Noto Color Emoji',sans-serif !important;
+  border-radius:22px !important;
+  border:5px solid var(--gold) !important;
+  box-shadow:0 20px 60px rgba(0,0,0,.5), 0 0 0 6px rgba(232,182,74,.25) !important;
+  padding:26px 24px !important;
+  background:linear-gradient(160deg,#fffdf7 0%,#fff5e0 100%) !important;
+}
+.swal2-title.memorama-title{
+  font-family:'Fredoka',sans-serif !important;
+  color:var(--accent) !important;
+  font-size:1.5rem !important;
+  font-weight:700 !important;
+  display:flex !important;align-items:center;justify-content:center;
+  gap:12px;padding:0 !important;
+}
+.swal2-title.memorama-title i{
+  font-size:1.5rem;color:var(--gold);
+  filter:drop-shadow(0 2px 4px rgba(232,182,74,.7));
+}
+.swal2-html-container.memorama-html{
+  font-family:'Quicksand',sans-serif !important;
+  color:var(--text) !important;
+  font-size:.95rem !important;margin:14px 0 4px !important;
+}
+.swal2-confirm.memorama-confirm{
+  background:linear-gradient(135deg,var(--accent) 0%,#b8431f 100%) !important;
+  border-radius:14px !important;font-family:'Fredoka',sans-serif !important;
+  font-weight:700 !important;font-size:1rem !important;padding:12px 32px !important;
+  box-shadow:0 5px 0 #8a2e15 !important;border:none !important;
+  transition:transform .12s, box-shadow .12s !important;
+  margin:0 6px !important;display:inline-flex !important;align-items:center;gap:8px;
+}
+.swal2-confirm.memorama-confirm:hover{
+  transform:translateY(-2px) !important;box-shadow:0 7px 0 #8a2e15 !important;
+}
+.swal2-confirm.memorama-confirm:active{
+  transform:translateY(3px) !important;box-shadow:0 2px 0 #8a2e15 !important;
+}
+.swal2-icon.memorama-icon.swal2-warning{
+  border-color:var(--gold) !important;color:var(--gold) !important;
+  background:linear-gradient(145deg,#fff8e4,#ffe9b8) !important;
+  box-shadow:0 0 0 4px rgba(232,182,74,.25);
+}
+.swal2-icon.memorama-icon.swal2-info{
+  border-color:var(--accent2) !important;color:var(--accent2) !important;
+  background:linear-gradient(145deg,#e8f5e9,#c8e6c9) !important;
+  box-shadow:0 0 0 4px rgba(45,143,111,.25);
+}
+.swal2-icon.memorama-icon.swal2-success{
+  border-color:var(--accent2) !important;color:var(--accent2) !important;
+  background:linear-gradient(145deg,#e8f5e9,#c8e6c9) !important;
+  box-shadow:0 0 0 4px rgba(45,143,111,.25);
+}
+.swal2-icon.memorama-icon.swal2-error{
+  border-color:#c62828 !important;color:#c62828 !important;
+  background:linear-gradient(145deg,#ffebee,#ffcdd2) !important;
+  box-shadow:0 0 0 4px rgba(198,40,40,.25);
+}
+.swal2-icon.memorama-icon .swal2-icon-content{font-size:2.4rem !important;}
+
+.memorama-info-box{text-align:center;font-size:.98rem;line-height:1.5;color:var(--text);}
+.memorama-info-box b{color:var(--accent);font-family:'Fredoka',sans-serif;}
+.memorama-info-box .code-highlight{
+  display:inline-block;margin-top:8px;padding:8px 18px;border-radius:10px;
+  background:linear-gradient(135deg,#e8b64a,#f5d97a 60%,#e8b64a);
+  color:#4a3a10;font-family:'Fredoka',sans-serif;font-weight:700;font-size:1.3rem;
+  letter-spacing:.22em;border:2px solid #b8912e;box-shadow:0 3px 0 #b8912e;
+  text-shadow:0 1px 0 rgba(255,255,255,.4);
+}
+
+.swal-avatar-grid{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:6px 0;
+}
+.swal-avatar-grid .avatar-option{
+  aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+  font-size:1.5rem;background:#faf5ff;border-radius:12px;cursor:pointer;
+  border:2px solid transparent;
+  transition:transform .12s, border-color .12s, background .12s, box-shadow .12s;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+}
+.swal-avatar-grid .avatar-option:hover{
+  transform:scale(1.08);background:#f3e5f5;box-shadow:0 4px 10px rgba(74,20,140,.18);
+}
+.swal-avatar-grid .avatar-option.selected{
+  border-color:#2d8f6f;background:linear-gradient(135deg,#d4f4e2,#b8ecd0);
+  box-shadow:0 0 0 3px rgba(45,143,111,.25);transform:scale(1.05);
+}
+
+.swal-pairs-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:6px 0;
+  max-height:60vh;overflow-y:auto;
+}
+.swal-pair-card{
+  background:linear-gradient(145deg,#f3e5f5,#e1bee7);
+  border-radius:14px;padding:10px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;border:2px solid transparent;
+  transition:transform .15s, box-shadow .15s, border-color .15s;
+}
+.swal-pair-card:hover{
+  transform:translateY(-3px) scale(1.03);
+  border-color:#e8b64a;box-shadow:0 8px 18px rgba(74,20,140,.25);
+}
+.swal-pair-card .pc-emojis{
+  display:flex;align-items:center;gap:6px;font-size:1.6rem;
+  font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;
+}
+.swal-pair-card .pc-name{
+  font-family:'Fredoka',sans-serif;font-size:.72rem;font-weight:700;
+  color:#4a148c;text-align:center;line-height:1.15;margin-top:2px;
+}
+
+.story-block{text-align:left;font-family:'Quicksand','Noto Color Emoji',sans-serif;color:#2b2340;}
+.story-block .section-title{
+  font-family:'Fredoka',sans-serif;font-size:.72rem;color:#2d8f6f;
+  margin:12px 0 4px;text-transform:uppercase;letter-spacing:.05em;
+  border-bottom:2px dotted #2d8f6f;padding-bottom:3px;text-align:left;
+}
+.story-block .section-title i{margin-right:4px;}
+.story-block .section-title.limit{color:#c62828;border-color:#c62828;}
+.story-block .section-title.used{color:#1565c0;border-color:#1565c0;}
+.story-block .purpose{
+  background:#fdf0d8;border-left:5px solid #e8b64a;
+  padding:10px 12px;border-radius:10px;font-size:.9rem;color:#4a3a10;
+  line-height:1.5;text-align:left;
+}
+.story-block .limit-box{
+  background:#ffebee;border-left:5px solid #c62828;
+  padding:10px 12px;border-radius:10px;font-size:.88rem;color:#8e0000;
+  line-height:1.5;text-align:left;
+}
+.story-block .used-box{
+  background:#e3f2fd;border-left:5px solid #1565c0;
+  padding:10px 12px;border-radius:10px;font-size:.88rem;color:#0d47a1;
+  line-height:1.5;text-align:left;
+}
+.story-block .verse{
+  background:#e8f5e9;border-left:5px solid #2d8f6f;
+  padding:9px 12px;border-radius:10px;font-size:.85rem;font-style:italic;
+  color:#1b5e20;line-height:1.5;text-align:left;
+}
+
+@media (max-width:400px){
+  .lobby-players{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .code-panel .code-display{font-size:2rem;letter-spacing:.2em;}
+  .card-avatar{width:56px;height:56px;font-size:2rem;}
+  .lobby-player-card.host-card .card-avatar{width:64px;height:64px;font-size:2.4rem;}
+  .card-name{font-size:.82rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== PANTALLA 1 ==================== -->
+<div class="card-box" id="screen1">
+  <h1>Tengo un <span>Propósito</span> <i class="fa-solid fa-star"></i></h1>
+  <div class="sub">Memorama Bíblico Multijugador</div>
+
+  <div class="discover-bar">
+    <button class="discover-btn" id="discoverBtn">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Descubre los pares</span>
+    </button>
+  </div>
+
+  <div class="tabs" style="margin-bottom:10px;">
+    <button class="tab active" data-tab="join"><i class="fa-solid fa-gamepad"></i> Unirme</button>
+    <button class="tab" data-tab="create"><i class="fa-solid fa-crown"></i> Crear sala</button>
+  </div>
+
+  <div class="panel active" id="panel-join">
+    <label>Tu nombre</label>
+    <input id="playerName" type="text" maxlength="20" placeholder="Ej. María" autocomplete="off">
+
+    <label style="margin-top:14px;">Elige tu avatar</label>
+    <div class="avatar-row" id="avatarRow"></div>
+    <div class="avatar-note">Podrás cambiarlo después en la sala de espera.</div>
+
+    <label>Código de sala</label>
+    <input id="roomCode" type="text" class="code" maxlength="6" placeholder="000000" inputmode="numeric">
+    <button class="btn primary" id="joinBtn">
+      <i class="fa-solid fa-right-to-bracket"></i>
+      <span>Entrar a la partida</span>
+    </button>
+  </div>
+
+  <div class="panel" id="panel-create">
+    <div class="host-info">
+      <i class="fa-solid fa-crown"></i> <b>Serás el anfitrión.</b><br>
+      No juegas: solo controlas la partida y ves los puntajes.
+    </div>
+    <button class="btn secondary" id="createBtn">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <span>Crear sala</span>
+    </button>
+  </div>
+
+  <div class="error" id="err1"></div>
+</div>
+
+<!-- ==================== PANTALLA 2: LOBBY ==================== -->
+<div class="card-box" id="screen2" style="display:none;">
+  <div class="lobby-header">
+    <h2 class="lobby-title" id="lobbyTitle">
+      <i class="fa-solid fa-chalkboard-user"></i>
+ Sala de espera
+    </h2>
+  </div>
+
+  <div class="code-panel">
+    <div class="label"><i class="fa-solid fa-hashtag"></i> Código de sala</div>
+    <div class="code-display" id="lobbyCode">------</div>
+    <div class="code-actions">
+      <button id="copyBtn">
+        <i class="fa-solid fa-copy"></i> Copiar
+      </button>
+      <button id="shareBtn">
+        <i class="fa-solid fa-share-nodes"></i> Compartir
+      </button>
+    </div>
+  </div>
+
+  <div class="players-section-title">
+    <span class="left"><i class="fa-solid fa-users"></i> Jugadores</span>
+    <span class="badge" id="playerCount">0</span>
+  </div>
+
+  <div class="lobby-players" id="lobbyPlayers"></div>
+
+  <div class="waiting" id="waitMsg">Esperando jugadores...</div>
+
+  <button class="start-btn" id="startBtn" style="display:none;" disabled>
+    <i class="fa-solid fa-rocket"></i>
+    <span>Iniciar partida</span>
+  </button>
+
+  <div class="waiting-host" id="waitingHost" style="display:none;">
+    <i class="fa-regular fa-hourglass-half"></i>
+    <span>Esperando que el anfitrión inicie...</span>
+  </div>
+
+  <div class="error" id="err2"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+let myRoomCode = null;
+let isHost = false;
+let selectedAvatar = null;
+let PAIRS_CACHE = [];
+let lastPlayerIdsJoined = '';
+
+const $ = id => document.getElementById(id);
+
+const AVATARS = [
+  '🦊','🐼','🐸','🐯','🦁','🐨','🐵','🐰','🐷','🐮',
+  '🐔','🦉','🐢','🦄','🐙','🦋','🐝','🐬','🦜','🐲'
+];
+
+function getPlayerId() {
+  let pid = sessionStorage.getItem('playerId');
+  if (!pid) {
+    pid = 'p_' + Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+    sessionStorage.setItem('playerId', pid);
+  }
+  return pid;
+}
+
+/* ================= SONIDOS ================= */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { return null; }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, duration = 0.15, type = 'sine', volume = 0.2, delay = 0) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(gain).connect(ctx.destination);
+  const startTime = ctx.currentTime + delay;
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.05);
+}
+function playClickSound() { playTone(1200, 0.05, 'sine', 0.08, 0); }
+function playSuccessSound() {
+  playTone(659.25, 0.12, 'triangle', 0.15, 0);
+  playTone(880.00, 0.15, 'triangle', 0.15, 0.10);
+  playTone(1174.66, 0.2, 'triangle', 0.15, 0.22);
+}
+function playWarningSound() {
+  playTone(440, 0.15, 'triangle', 0.15, 0);
+  playTone(330, 0.2, 'triangle', 0.15, 0.15);
+}
+function playErrorSound() {
+  playTone(220.00, 0.15, 'sawtooth', 0.12, 0);
+  playTone(164.81, 0.25, 'sawtooth', 0.12, 0.12);
+}
+function playJoinSound() {
+  playTone(523.25, 0.08, 'triangle', 0.12, 0);
+  playTone(783.99, 0.12, 'triangle', 0.12, 0.08);
+  playTone(1046.50, 0.15, 'triangle', 0.12, 0.18);
+}
+
+/* ================= AVATAR PICKER ================= */
+function buildCompactAvatarPicker() {
+  const row = $('avatarRow');
+  row.innerHTML = '';
+  let saved = sessionStorage.getItem('avatar');
+  if (!saved || !AVATARS.includes(saved)) saved = AVATARS[0];
+  selectedAvatar = saved;
+
+  const idx = AVATARS.indexOf(saved);
+  const shown = [
+    saved,
+    AVATARS[(idx + 1) % AVATARS.length],
+    AVATARS[(idx + 2) % AVATARS.length]
+  ];
+
+  shown.forEach(a => {
+    const chip = document.createElement('div');
+    chip.className = 'avatar-chip' + (a === saved ? ' selected' : '');
+    chip.textContent = a;
+    chip.onclick = () => {
+      playClickSound();
+      selectedAvatar = a;
+      sessionStorage.setItem('avatar', a);
+      buildCompactAvatarPicker();
+    };
+    row.appendChild(chip);
+  });
+
+  const moreBtn = document.createElement('button');
+  moreBtn.className = 'avatar-more';
+  moreBtn.innerHTML = '<i class="fa-solid fa-plus"></i><span>Ver más</span>';
+  moreBtn.title = 'Elegir otro avatar';
+  moreBtn.onclick = () => { playClickSound(); openAvatarPickerModal(); };
+  row.appendChild(moreBtn);
+}
+
+function openAvatarPickerModal(onSelectCallback) {
+  let gridHtml = '<div class="swal-avatar-grid" id="swalAvatarGrid">';
+  AVATARS.forEach(a => {
+    const sel = a === selectedAvatar ? ' selected' : '';
+    gridHtml += `<div class="avatar-option${sel}" data-avatar="${a}">${a}</div>`;
+  });
+  gridHtml += '</div>';
+
+  Swal.fire({
+    title: '<i class="fa-solid fa-user-astronaut"></i><span>Elige tu avatar</span>',
+    html: gridHtml,
+    showConfirmButton: false,
+    showCloseButton: true,
+    width: 'auto',
+    customClass: { popup: 'memorama-swal', title: 'memorama-title' },
+    didOpen: () => {
+      const grid = document.getElementById('swalAvatarGrid');
+      grid.querySelectorAll('.avatar-option').forEach(el => {
+        el.onclick = () => {
+          selectedAvatar = el.dataset.avatar;
+          sessionStorage.setItem('avatar', selectedAvatar);
+          playClickSound();
+          Swal.close();
+          if (onSelectCallback) onSelectCallback(selectedAvatar);
+          else buildCompactAvatarPicker();
+        };
+      });
+    }
+  });
+}
+
+buildCompactAvatarPicker();
+
+/* ================= TABS ================= */
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    playClickSound();
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $('panel-' + t.dataset.tab).classList.add('active');
+  };
+});
+
+/* ================= DESCUBRE ================= */
+$('discoverBtn').onclick = async () => {
+  playClickSound();
+  if (PAIRS_CACHE.length === 0) {
+    try {
+      const r = await fetch('/api/pairs');
+      PAIRS_CACHE = await r.json();
+    } catch (e) {
+      playErrorSound();
+      Swal.fire({
+        title: '<i class="fa-solid fa-triangle-exclamation"></i><span>Error</span>',
+        html: '<div class="memorama-info-box">No se pudo cargar la información.</div>',
+        confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+        customClass: {
+          popup: 'memorama-swal', title: 'memorama-title',
+          htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+        },
+        buttonsStyling: false
+      });
+      return;
+    }
+  }
+
+  let gridHtml = '<div class="swal-pairs-grid" id="swalPairsGrid">';
+  PAIRS_CACHE.forEach((p, i) => {
+    gridHtml += `
+      <div class="swal-pair-card" data-pid="${i}">
+        <div class="pc-emojis"><span>${p.emoji}</span><span>${p.symbol}</span></div>
+        <div class="pc-name">${p.name}</div>
+      </div>`;
+  });
+  gridHtml += '</div>';
+
+  Swal.fire({
+    title: '<i class="fa-solid fa-book-bible"></i><span>Pares del memorama</span>',
+    html: gridHtml,
+    showConfirmButton: false,
+    showCloseButton: true,
+    width: 'auto',
+    customClass: { popup: 'memorama-swal', title: 'memorama-title' },
+    didOpen: () => {
+      const grid = document.getElementById('swalPairsGrid');
+      grid.querySelectorAll('.swal-pair-card').forEach(el => {
+        el.onclick = () => {
+          const pid = parseInt(el.dataset.pid, 10);
+          playClickSound();
+          Swal.close();
+          setTimeout(() => showPairStory(PAIRS_CACHE[pid]), 200);
+        };
+      });
+    }
+  });
+};
+
+function showPairStory(p) {
+  const limitacion = p.limitacion || 'No hay información registrada.';
+  const usoDeDios = p.usoDeDios || 'No hay información registrada.';
+
+  const html = `
+    <div class="story-block">
+      <div style="font-family:'Fredoka',sans-serif;color:#e0592a;font-size:1.25rem;margin-bottom:4px;">
+        ${p.emoji} ${p.name} ${p.symbol}
+      </div>
+      <div style="font-size:.82rem;opacity:.7;margin-bottom:6px;text-align:left;">
+        Símbolo: ${p.symName}
+      </div>
+      <div class="section-title"><i class="fa-solid fa-book"></i> Mini historia</div>
+      <div class="purpose">${p.historia}</div>
+      <div class="section-title limit"><i class="fa-solid fa-triangle-exclamation"></i> Su limitación</div>
+      <div class="limit-box">${limitacion}</div>
+      <div class="section-title used"><i class="fa-solid fa-star"></i> Cómo lo usó Dios</div>
+      <div class="used-box">${usoDeDios}</div>
+      <div class="section-title"><i class="fa-solid fa-scroll"></i> Versículo clave</div>
+      <div class="verse">${p.versiculo}</div>
+    </div>
+  `;
+
+  Swal.fire({
+    html,
+    showConfirmButton: true,
+    confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+    showCloseButton: true,
+    width: 'auto',
+    customClass: { popup: 'memorama-swal', confirmButton: 'memorama-confirm' },
+    buttonsStyling: false
+  });
+}
+
+/* ================= CREAR SALA ================= */
+$('createBtn').onclick = () => {
+  playClickSound();
+  const playerId = getPlayerId();
+  socket.emit('createRoom', { playerId }, (res) => {
+    if (!res.ok) {
+      playErrorSound();
+      Swal.fire({
+        title: '<i class="fa-solid fa-triangle-exclamation"></i><span>Error</span>',
+        html: '<div class="memorama-info-box">No se pudo crear la sala. Intenta de nuevo.</div>',
+        confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+        customClass: {
+          popup: 'memorama-swal', title: 'memorama-title',
+          htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+        },
+        buttonsStyling: false
+      });
+      return;
+    }
+    myRoomCode = res.code;
+    isHost = true;
+    sessionStorage.setItem('roomCode', res.code);
+    sessionStorage.setItem('isHost', '1');
+    sessionStorage.setItem('playerName', 'Anfitrión');
+    sessionStorage.removeItem('avatar');
+    showLobby(res.code);
+    playSuccessSound();
+  });
+};
+
+/* ================= UNIRSE ================= */
+$('joinBtn').onclick = () => {
+  playClickSound();
+  const name = $('playerName').value.trim();
+  const code = $('roomCode').value.trim();
+
+  if (!name) {
+    playWarningSound();
+    Swal.fire({
+      title: '<i class="fa-solid fa-user-pen"></i><span>Falta tu nombre</span>',
+      html: '<div class="memorama-info-box">Escribe tu nombre para identificarte en la partida.</div>',
+      confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+      customClass: {
+        popup: 'memorama-swal', title: 'memorama-title',
+        htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+      },
+      buttonsStyling: false
+    });
+    return;
+  }
+  if (!/^\d{6}$/.test(code)) {
+    playWarningSound();
+    Swal.fire({
+      title: '<i class="fa-solid fa-hashtag"></i><span>Código inválido</span>',
+      html: '<div class="memorama-info-box">El código de sala debe tener <b>6 dígitos</b>.<br>Revísalo e inténtalo de nuevo.</div>',
+      confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+      customClass: {
+        popup: 'memorama-swal', title: 'memorama-title',
+        htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+      },
+      buttonsStyling: false
+    });
+    return;
+  }
+  if (!selectedAvatar) {
+    playWarningSound();
+    Swal.fire({
+      title: '<i class="fa-solid fa-user-astronaut"></i><span>Falta tu avatar</span>',
+      html: '<div class="memorama-info-box">Elige un avatar antes de entrar a la sala.</div>',
+      confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+      customClass: {
+        popup: 'memorama-swal', title: 'memorama-title',
+        htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+      },
+      buttonsStyling: false
+    });
+    return;
+  }
+
+  const playerId = getPlayerId();
+  sessionStorage.setItem('playerName', name);
+
+  socket.emit('joinRoom', { code, name, playerId, avatar: selectedAvatar }, (res) => {
+    if (!res.ok) {
+      playErrorSound();
+      Swal.fire({
+        title: '<i class="fa-solid fa-door-closed"></i><span>No se pudo entrar</span>',
+        html: `<div class="memorama-info-box">${res.error}</div>`,
+        confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+        customClass: {
+          popup: 'memorama-swal', title: 'memorama-title',
+          htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+        },
+        buttonsStyling: false
+      });
+      return;
+    }
+    myRoomCode = res.code;
+    isHost = !!res.isHost;
+    sessionStorage.setItem('roomCode', res.code);
+    sessionStorage.setItem('isHost', isHost ? '1' : '0');
+    showLobby(res.code);
+    playSuccessSound();
+  });
+};
+
+function showLobby(code) {
+  $('screen1').style.display = 'none';
+  $('screen2').style.display = 'block';
+  $('lobbyCode').textContent = code;
+}
+
+/* ================= COPIAR ================= */
+$('copyBtn').onclick = () => {
+  playClickSound();
+  navigator.clipboard.writeText(myRoomCode);
+  playSuccessSound();
+  Swal.fire({
+    title: '<i class="fa-solid fa-clipboard-check"></i><span>¡Código copiado!</span>',
+    html: `<div class="memorama-info-box">
+      Compártelo con tus amigos.
+      <br><span class="code-highlight">${myRoomCode}</span>
+    </div>`,
+    confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+    timer: 2000,
+    timerProgressBar: true,
+    customClass: {
+      popup: 'memorama-swal', title: 'memorama-title',
+      htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+    },
+    buttonsStyling: false
+  });
+};
+
+/* ================= COMPARTIR ================= */
+$('shareBtn').onclick = async () => {
+  playClickSound();
+  const shareText = `¡Únete a mi partida de Memorama Bíblico! Código: ${myRoomCode}`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Memorama Bíblico', text: shareText });
+    } catch(e) { /* cancelado */ }
+  } else {
+    navigator.clipboard.writeText(shareText);
+    playSuccessSound();
+    Swal.fire({
+      title: '<i class="fa-solid fa-share-nodes"></i><span>Texto copiado</span>',
+      html: `<div class="memorama-info-box">Pega el texto donde quieras compartirlo.</div>`,
+      confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+      timer: 1800,
+      timerProgressBar: true,
+      customClass: {
+        popup: 'memorama-swal', title: 'memorama-title',
+        htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+      },
+      buttonsStyling: false
+    });
+  }
+};
+
+/* ================= INICIAR ================= */
+$('startBtn').onclick = () => {
+  playClickSound();
+  socket.emit('startGame');
+};
+
+/* ================= ESTADO DE LA SALA — SIEMPRE RE-RENDERIZA ================= */
+socket.on('roomState', (state) => {
+  const myPlayerId = sessionStorage.getItem('playerId');
+  const totalPlayers = state.players.length;
+  $('playerCount').textContent = totalPlayers;
+
+  // Detectar jugador nuevo para sonido
+  const currentIds = state.players.map(p => p.id).sort().join(',');
+  if (lastPlayerIdsJoined && lastPlayerIdsJoined !== currentIds) {
+    const prevArr = lastPlayerIdsJoined.split(',').filter(Boolean);
+    const newArr = currentIds.split(',').filter(Boolean);
+    if (newArr.length > prevArr.length) {
+      playJoinSound();
+    }
+  }
+  lastPlayerIdsJoined = currentIds;
+
+  // SIEMPRE re-renderizar
+  renderLobbyPlayers(state, myPlayerId);
+
+  // Si la partida inició, ir a game.html
+  if (state.started) {
+    window.location.href = '/game.html';
+    return;
+  }
+
+  // Botones según rol
+  const iAmHost = (state.hostId === myPlayerId) || sessionStorage.getItem('isHost') === '1';
+
+  if (iAmHost) {
+    $('startBtn').style.display = 'inline-flex';
+    $('waitingHost').style.display = 'none';
+    $('startBtn').disabled = totalPlayers < 2;
+    $('waitMsg').innerHTML = totalPlayers < 2
+      ? '<i class="fa-solid fa-hourglass-half"></i> Necesitas al menos 2 jugadores'
+      : `<i class="fa-solid fa-check-circle" style="color:#2d8f6f;"></i> ¡Listos! ${totalPlayers} jugadores`;
+  } else {
+    $('startBtn').style.display = 'none';
+    $('waitingHost').style.display = 'flex';
+    $('waitMsg').innerHTML = totalPlayers < 2
+      ? '<i class="fa-solid fa-hourglass-half"></i> Esperando más jugadores...'
+      : `<i class="fa-solid fa-check-circle" style="color:#2d8f6f;"></i> ¡Listos! ${totalPlayers} jugadores`;
+  }
+});
+
+function renderLobbyPlayers(state, myPlayerId) {
+  const list = $('lobbyPlayers');
+  list.innerHTML = '';
+
+  // 1) Tarjeta del HOST (siempre primero) — SIEMPRE con la corona 👑
+  if (state.hostName) {
+    const isMeHost = state.hostId === myPlayerId;
+    const hostCard = document.createElement('div');
+    hostCard.className = 'lobby-player-card host-card' + (isMeHost ? ' me' : '');
+    hostCard.innerHTML = `
+      ${isMeHost ? '<div class="card-you-tag">TÚ</div>' : ''}
+      <div class="card-avatar" style="font-family:'Noto Color Emoji','Apple Color Emoji','Segoe UI Emoji',sans-serif;">👑</div>
+      <div class="card-name">${state.hostName}</div>
+      <div class="card-status host-status">
+        <i class="fa-solid fa-crown"></i> ANFITRIÓN
+      </div>
+    `;
+    list.appendChild(hostCard);
+  }
+
+  // 2) Tarjetas de los jugadores
+  if (state.players.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-lobby';
+    empty.innerHTML = '<i class="fa-solid fa-user-plus"></i>Esperando jugadores...<br>Comparte el código de la sala.';
+    list.appendChild(empty);
+    return;
+  }
+
+  state.players.forEach(p => {
+    const isMe = p.id === myPlayerId;
+    const connected = p.connected !== false;
+    const card = document.createElement('div');
+    card.className = 'lobby-player-card' + (isMe ? ' me editable' : '');
+    card.dataset.playerId = p.id;
+
+    card.innerHTML = `
+      ${isMe ? '<div class="card-you-tag">TÚ</div>' : ''}
+      <div class="card-avatar">${p.avatar || '🦊'}</div>
+      <div class="card-name">${p.name}</div>
+      <div class="card-status ${connected ? (isMe ? 'you' : '') : 'disconnected'}">
+        ${connected
+          ? (isMe ? '<i class="fa-solid fa-pen"></i> Toca para cambiar' : '<i class="fa-solid fa-check"></i> Listo')
+          : '<i class="fa-solid fa-moon"></i> Desconectado'}
+      </div>
+    `;
+
+    if (isMe && connected) {
+      card.onclick = () => {
+        playClickSound();
+        openAvatarPickerModal((newAvatar) => {
+          sessionStorage.setItem('avatar', newAvatar);
+          socket.emit('changeAvatar', { avatar: newAvatar });
+        });
+      };
+    }
+
+    list.appendChild(card);
+  });
+}
+
+/* ================= HOST LEFT ================= */
+socket.on('hostLeft', () => {
+  playErrorSound();
+  Swal.fire({
+    title: '<i class="fa-solid fa-lock"></i><span>Sala cerrada</span>',
+    html: '<div class="memorama-info-box">El anfitrión cerró la sala.</div>',
+    confirmButtonText: '<i class="fa-solid fa-check"></i><span>Entendido</span>',
+    customClass: {
+      popup: 'memorama-swal', title: 'memorama-title',
+      htmlContainer: 'memorama-html', confirmButton: 'memorama-confirm'
+    },
+    buttonsStyling: false
+  }).then(() => {
+    sessionStorage.clear();
+    window.location.href = '/';
+  });
+});
+
+/* ================= AUDIO UNLOCK ================= */
+document.addEventListener('click', () => {
+  getAudioCtx();
+}, { once: true });
+</script>
+</body>
+</html>
